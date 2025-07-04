@@ -107,6 +107,8 @@ curl http://localhost:8082/users
 
 ## 📚 Documentation
 
+- **[HANDS_ON_GUIDE.md](HANDS_ON_GUIDE.md)** - Complete hands-on tutorial from start to finish
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference for common commands and operations
 - **[DOCKER_SETUP_GUIDE.md](DOCKER_SETUP_GUIDE.md)** - Docker-based setup (recommended)
 - **[QUICK_START.md](QUICK_START.md)** - Setup cluster dan troubleshooting
 - **[TUTORIAL_SUMMARY.md](TUTORIAL_SUMMARY.md)** - Ringkasan lengkap tutorial
@@ -328,10 +330,11 @@ docker-compose up -d
 
 ### 📚 Documentation & Help
 
-1. **Primary Docs**: Check [DOCKER_SETUP_GUIDE.md](DOCKER_SETUP_GUIDE.md) for Docker setup
-2. **Troubleshooting**: See [QUICK_START.md](QUICK_START.md) for common issues
-3. **Cleanup**: Use [UNINSTALL_GUIDE.md](UNINSTALL_GUIDE.md) for complete removal
-4. **Lightweight**: Try `setup-lightweight.sh` for resource-constrained environments
+1. **Hands-On Tutorial**: Follow [HANDS_ON_GUIDE.md](HANDS_ON_GUIDE.md) for complete step-by-step instructions
+2. **Quick Reference**: Use [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for daily operations and commands
+3. **Docker Setup**: Check [DOCKER_SETUP_GUIDE.md](DOCKER_SETUP_GUIDE.md) for Docker-specific setup
+4. **Troubleshooting**: See [QUICK_START.md](QUICK_START.md) for common issues and solutions
+5. **Complete Cleanup**: Use [UNINSTALL_GUIDE.md](UNINSTALL_GUIDE.md) for removal instructions
 
 ### 🔧 Debug Commands
 ```bash
@@ -366,22 +369,25 @@ docker-compose exec elasticsearch bash
 ## 📚 Learning Path
 
 ### 👶 Beginner (Start Here)
-1. **Setup Docker Environment**: `./setup-docker.sh`
-2. **Validate Installation**: `./test-scripts.sh`
-3. **Explore Kibana**: Create index patterns and basic visualizations
-4. **Read Documentation**: Check [DOCKER_SETUP_GUIDE.md](DOCKER_SETUP_GUIDE.md)
+1. **Read Overview**: Check this README for general understanding
+2. **Complete Hands-On**: Follow [HANDS_ON_GUIDE.md](HANDS_ON_GUIDE.md) step by step
+3. **Setup Docker Environment**: `./setup-docker.sh`
+4. **Validate Installation**: `./test-scripts.sh`
+5. **Use Quick Reference**: Bookmark [QUICK_REFERENCE.md](QUICK_REFERENCE.md) for daily use
 
 ### 🔧 Intermediate 
-1. **Understand Data Flow**: Study the pipeline from logs to dashboards
+1. **Study Architecture**: Understand the complete data flow pipeline
 2. **Customize Configurations**: Modify Logstash pipelines and Elasticsearch mappings
-3. **Create Dashboards**: Build custom visualizations in Kibana
-4. **Monitor Performance**: Use the monitoring tools and debug commands
+3. **Create Custom Dashboards**: Build visualizations for your specific needs
+4. **Practice with Real Data**: Use the sample applications and generate realistic logs
+5. **Learn Advanced Queries**: Master Elasticsearch query DSL and KQL
 
 ### 🚀 Advanced
 1. **Production Deployment**: Use `./setup.sh` for Kubernetes/OpenShift
-2. **Security Configuration**: Implement authentication and authorization
-3. **Performance Tuning**: Optimize for your specific use case
-4. **Custom Use Cases**: Adapt for your organization's requirements
+2. **Security Configuration**: Implement authentication, authorization, and TLS
+3. **Performance Tuning**: Optimize for high-volume production environments
+4. **Custom Use Cases**: Adapt configurations for your organization's requirements
+5. **Integration**: Connect with external monitoring and alerting systems
 
 ### 📈 Next Steps
 - **Scale the Setup**: Add more nodes and services
