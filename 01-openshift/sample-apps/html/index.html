@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ELK Stack Demo - E-commerce Platform</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .service { background: #f4f4f4; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .api-endpoint { background: #e8f4f8; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ E-commerce Platform Demo</h1>
+        <p>Welcome to our ELK Stack demonstration platform. This simulates a microservices-based e-commerce application.</p>
+        
+        <div class="service">
+            <h2>📦 Order Service</h2>
+            <p>Manages customer orders and order processing.</p>
+            <div class="api-endpoint">
+                <strong>API Endpoints:</strong><br>
+                <a href="/api/orders">/api/orders</a> - Get all orders<br>
+                <a href="/health">/health</a> - Health check
+            </div>
+        </div>
+        
+        <div class="service">
+            <h2>🛒 Product Service</h2>
+            <p>Manages product catalog and inventory.</p>
+            <div class="api-endpoint">
+                <strong>API Endpoints:</strong><br>
+                <a href="/api/products">/api/products</a> - Get all products<br>
+                <a href="/health">/health</a> - Health check
+            </div>
+        </div>
+        
+        <div class="service">
+            <h2>👥 User Service</h2>
+            <p>Manages user accounts and authentication.</p>
+            <div class="api-endpoint">
+                <strong>API Endpoints:</strong><br>
+                <a href="/api/users">/api/users</a> - Get all users<br>
+                <a href="/health">/health</a> - Health check
+            </div>
+        </div>
+        
+        <h2>🔧 ELK Stack Components</h2>
+        <ul>
+            <li><a href="http://localhost:5601" target="_blank">Kibana Dashboard</a> - Data visualization</li>
+            <li><a href="http://localhost:9200" target="_blank">Elasticsearch</a> - Search and analytics</li>
+            <li><a href="http://localhost:8090" target="_blank">Kafka UI</a> - Message streaming</li>
+            <li><a href="http://localhost:9100" target="_blank">Elasticsearch Head</a> - Cluster monitoring</li>
+        </ul>
+    </div>
+</body>
+</html>

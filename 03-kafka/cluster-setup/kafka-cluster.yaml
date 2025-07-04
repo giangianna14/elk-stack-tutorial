@@ -1,0 +1,361 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: kafka
+spec:
+  kafka:
+    version: 3.6.0
+    replicas: 3
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
+        authentication:
+          type: scram-sha-512
+      - name: external
+        port: 9094
+        type: route
+        tls: true
+        authentication:
+          type: scram-sha-512
+    authorization:
+      type: simple
+      superUsers:
+        - kafka-admin
+        - logstash-user
+    config:
+      # Performance tuning
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 2
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      
+      # Log retention settings
+      log.retention.hours: 168  # 7 days
+      log.retention.bytes: 107374182400  # 100GB per partition
+      log.segment.bytes: 134217728  # 128MB
+      
+      # Performance settings
+      num.network.threads: 8
+      num.io.threads: 8
+      socket.send.buffer.bytes: 102400
+      socket.receive.buffer.bytes: 102400
+      socket.request.max.bytes: 104857600
+      
+      # Topic auto-creation (disabled for production)
+      auto.create.topics.enable: false
+      
+      # Compression
+      compression.type: producer
+      
+      # Batch settings
+      batch.size: 16384
+      linger.ms: 5
+      
+      # Security settings
+      security.inter.broker.protocol: SASL_SSL
+      sasl.mechanism.inter.broker.protocol: SCRAM-SHA-512
+      sasl.enabled.mechanisms: SCRAM-SHA-512
+      
+    storage:
+      type: persistent-claim
+      size: 500Gi
+      class: fast-ssd
+      
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 1
+      limits:
+        memory: 8Gi
+        cpu: 2
+        
+    # JVM settings untuk performance
+    jvmOptions:
+      -Xms: 4G
+      -Xmx: 4G
+      -XX:+UseG1GC
+      -XX:MaxGCPauseMillis: 20
+      -XX:InitiatingHeapOccupancyPercent: 35
+      -XX:+ExplicitGCInvokesConcurrent
+      -Djava.awt.headless: true
+      -Dsun.net.useExclusiveBind: false
+      
+    # Monitoring configuration
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: kafka-metrics-config.yml
+          
+    # Logging configuration
+    logging:
+      type: inline
+      loggers:
+        kafka.root.logger.level: INFO
+        log4j.logger.org.I0Itec.zkclient.ZkClient: INFO
+        log4j.logger.org.apache.zookeeper: INFO
+        log4j.logger.kafka: INFO
+        log4j.logger.org.apache.kafka: INFO
+        log4j.logger.kafka.request.logger: WARN
+        log4j.logger.kafka.network.Processor: OFF
+        log4j.logger.kafka.server.KafkaApis: OFF
+        log4j.logger.kafka.network.RequestChannel$: WARN
+        log4j.logger.kafka.controller: TRACE
+        log4j.logger.kafka.log.LogCleaner: INFO
+        log4j.logger.state.change.logger: TRACE
+        log4j.logger.kafka.authorizer.logger: WARN
+
+  zookeeper:
+    replicas: 3
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 1
+    storage:
+      type: persistent-claim
+      size: 10Gi
+      class: fast-ssd
+    jvmOptions:
+      -Xms: 1G
+      -Xmx: 1G
+      
+    # Monitoring untuk Zookeeper
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: zookeeper-metrics-config.yml
+
+  entityOperator:
+    topicOperator:
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 500m
+    userOperator:
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 500m
+
+---
+# Kafka Topics untuk ELK Stack
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: logs-production-applications
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  partitions: 6
+  replicas: 3
+  config:
+    retention.ms: 604800000  # 7 days
+    segment.ms: 86400000     # 1 day
+    compression.type: gzip
+    cleanup.policy: delete
+    min.insync.replicas: 2
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: logs-production-security
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  partitions: 3
+  replicas: 3
+  config:
+    retention.ms: 2592000000  # 30 days (compliance requirement)
+    segment.ms: 86400000      # 1 day
+    compression.type: gzip
+    cleanup.policy: delete
+    min.insync.replicas: 2
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: logs-production-business
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  partitions: 4
+  replicas: 3
+  config:
+    retention.ms: 2592000000  # 30 days
+    segment.ms: 86400000      # 1 day
+    compression.type: gzip
+    cleanup.policy: delete
+    min.insync.replicas: 2
+
+---
+# High-priority topic untuk payment service
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: logs-production-payment-service
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  partitions: 6  # High throughput
+  replicas: 3
+  config:
+    retention.ms: 2592000000  # 30 days (financial data)
+    segment.ms: 3600000       # 1 hour (faster compaction)
+    compression.type: gzip
+    cleanup.policy: delete
+    min.insync.replicas: 2
+    # Higher priority for financial transactions
+    message.max.bytes: 10485760  # 10MB for detailed transaction logs
+
+---
+# Users untuk authentication
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: filebeat-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Producer permissions untuk Filebeat
+      - resource:
+          type: topic
+          name: logs-production-applications
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-security
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-business
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-payment-service
+        operation: Write
+        host: "*"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: logstash-user
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      # Consumer permissions untuk Logstash
+      - resource:
+          type: topic
+          name: logs-production-applications
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-security
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-business
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: logs-production-payment-service
+        operation: Read
+        host: "*"
+      # Consumer group permissions
+      - resource:
+          type: group
+          name: logstash-elk-stack
+        operation: Read
+        host: "*"
+
+---
+# Monitoring ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-metrics
+  namespace: kafka
+data:
+  kafka-metrics-config.yml: |
+    # Kafka JMX metrics configuration
+    rules:
+      # Kafka broker metrics
+      - pattern: kafka.server<type=(.+), name=(.+)><>Value
+        name: kafka_server_$1_$2
+        type: GAUGE
+      - pattern: kafka.server<type=(.+), name=(.+), clientId=(.+)><>Value
+        name: kafka_server_$1_$2
+        type: GAUGE
+        labels:
+          clientId: "$3"
+      # Topic metrics
+      - pattern: kafka.log<type=Log, name=(.+), topic=(.+), partition=(.+)><>Value
+        name: kafka_log_$1
+        type: GAUGE
+        labels:
+          topic: "$2"
+          partition: "$3"
+      # Network request metrics
+      - pattern: kafka.network<type=(.+), name=(.+)><>Value
+        name: kafka_network_$1_$2
+        type: GAUGE
+      # Controller metrics
+      - pattern: kafka.controller<type=(.+), name=(.+)><>Value
+        name: kafka_controller_$1_$2
+        type: GAUGE
+        
+  zookeeper-metrics-config.yml: |
+    # Zookeeper JMX metrics configuration
+    rules:
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+)><>(\\w+)"
+        name: "zookeeper_$2"
+        type: GAUGE
+      - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+), name1=replica.(\\d+)><>(\\w+)"
+        name: "zookeeper_$3"
+        type: GAUGE
+        labels:
+          replicaId: "$2"
