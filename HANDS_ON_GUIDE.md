@@ -2,6 +2,29 @@
 
 Tutorial lengkap hands-on penggunaan ELK Stack dari awal sampai akhir dengan contoh praktis dan real-world scenarios.
 
+## 🆕 **Updated for Kibana 8.14.1**
+
+This guide is specifically updated for **Kibana 8.14.1** and includes all the latest features:
+
+### ✨ **New Features in Kibana 8.14.1:**
+- **📊 Data Views**: Replaces Index Patterns with enhanced field management
+- **🎨 Lens**: Unified visualization editor with drag-and-drop interface
+- **⚡ Runtime Fields**: Create calculated fields without reindexing
+- **🎛️ Dashboard Controls**: Interactive filters and time range controls
+- **🔍 Enhanced KQL**: Improved Kibana Query Language with better autocomplete
+- **🚨 Advanced Alerting**: ML-based anomaly detection and webhook notifications
+- **🗺️ Improved Maps**: Enhanced geographic visualizations
+- **📱 Mobile Responsive**: Better mobile experience for dashboards
+- **🔐 Spaces**: Multi-tenant architecture for team collaboration
+- **⚙️ Performance**: Enhanced caching and query optimization
+
+### 💡 **What's Different from Previous Versions:**
+- **Index Patterns** → **Data Views** (with runtime field support)
+- **Visualize** → **Lens** (unified visualization creation)
+- **Watcher** → **Alerting Rules** (integrated alerting framework)
+- **Spaces** for better multi-tenancy
+- **Enhanced Security** with field-level permissions
+
 ## 📋 Table of Contents
 
 1. [🏁 Getting Started](#-getting-started)
@@ -118,14 +141,14 @@ curl http://localhost:8082/users
 1. Open browser: http://localhost:5601
 2. Wait for Kibana to load (may take 1-2 minutes)
 
-### Step 2: Create Index Pattern
+### Step 2: Create Data View (Kibana 8.14.1)
 1. Go to **Management** → **Stack Management**
-2. Click **Index Patterns** under Kibana
-3. Click **Create index pattern**
-4. Enter pattern: `logstash-*`
-5. Click **Next step**
-6. Select **@timestamp** as time field
-7. Click **Create index pattern**
+2. Click **Data Views** under Kibana (previously called Index Patterns)
+3. Click **Create data view**
+4. Enter **Name**: `logstash-data-view`
+5. Enter **Index pattern**: `logstash-*`
+6. Select **Timestamp field**: `@timestamp`
+7. Click **Save data view to Kibana**
 
 ### Step 3: Generate Sample Data
 ```bash
@@ -141,11 +164,16 @@ done
 curl "localhost:9200/_cat/indices?v"
 ```
 
-### Step 4: Explore Data
-1. Go to **Discover** in Kibana
-2. Select your `logstash-*` index pattern
-3. You should see logs flowing in
-4. Try filtering by service: `service.name: "order-service"`
+### Step 4: Explore Data in Discover (Kibana 8.14.1)
+1. Go to **Discover** in the main navigation
+2. Select your `logstash-data-view` from the data view dropdown
+3. You should see logs flowing in with the new unified search experience
+4. Use KQL (Kibana Query Language) to filter:
+   - `service.name: "order-service"`
+   - `log.level: "ERROR"`
+   - `@timestamp >= now-1h`
+5. Use the **Add filter** button for complex filtering
+6. Explore the **Document table** with improved layout in Kibana 8.14
 
 ---
 
@@ -263,53 +291,86 @@ docker-compose restart logstash
 
 ---
 
-## 📈 Creating Dashboards
+## 📈 Creating Dashboards (Kibana 8.14.1)
 
-### Step 1: Create Visualizations
+### Step 1: Create Visualizations with Lens
 
-#### 1. Service Request Count
-1. Go to **Visualize** → **Create visualization**
-2. Select **Vertical Bar Chart**
-3. Select `logstash-*` index
-4. **Y-axis**: Count
-5. **X-axis**: Terms aggregation on `service.name.keyword`
-6. Save as "Service Request Count"
+#### 1. Service Request Count (Using Lens)
+1. Go to **Visualize Library** → **Create visualization**
+2. Select **Lens** (the unified visualization editor in Kibana 8.14)
+3. Select your `logstash-data-view`
+4. **Chart type**: Vertical bar chart
+5. **Vertical axis**: Drag **Count of records** 
+6. **Horizontal axis**: Drag **service.name.keyword** → **Top 5 values**
+7. **Save** as "Service Request Count"
 
-#### 2. Response Time Over Time
-1. Create **Line Chart**
-2. **Y-axis**: Average of `response_time`
-3. **X-axis**: Date Histogram on `@timestamp`
-4. **Split Series**: Terms on `service.name.keyword`
-5. Save as "Response Time Trend"
+#### 2. Response Time Over Time (Using Lens)
+1. Create new **Lens** visualization
+2. **Chart type**: Line chart
+3. **Vertical axis**: Drag **response_time** → **Average**
+4. **Horizontal axis**: Drag **@timestamp** → **Date histogram**
+5. **Breakdown by**: Drag **service.name.keyword** → **Top 5 values**
+6. **Save** as "Response Time Trend"
 
-#### 3. Error Rate Gauge
-1. Create **Gauge**
-2. **Metric**: Count
-3. **Bucket**: Filters
-   - Filter 1: `log.level: "ERROR"`
-   - Filter 2: `*` (all logs)
-4. Save as "Error Rate"
+#### 3. Error Rate Metric (Using Lens)
+1. Create new **Lens** visualization  
+2. **Chart type**: Metric
+3. **Primary metric**: 
+   - Add **Count of records** with filter `log.level: "ERROR"`
+   - Add **Count of records** (total) as secondary metric
+4. **Save** as "Error Rate"
 
-### Step 2: Create Dashboard
+#### 4. Geographic Distribution (New in 8.14)
+1. Create new **Lens** visualization
+2. **Chart type**: Map
+3. **Layer**: Choropleth
+4. **Boundaries**: World Countries
+5. **Metrics**: Count of records by **geoip.country_name**
+6. **Save** as "Geographic Distribution"
+
+### Step 2: Create Dashboard (Kibana 8.14.1)
 1. Go to **Dashboard** → **Create dashboard**
-2. Add all three visualizations
-3. Arrange and resize as needed
-4. Save as "E-commerce Monitoring"
+2. Click **Add from library** to add your saved visualizations
+3. Add all four visualizations (Service Request Count, Response Time, Error Rate, Geographic Distribution)
+4. Use the **improved layout engine** in Kibana 8.14 to arrange panels
+5. **Resize and move** panels using the enhanced drag-and-drop interface
+6. **Add filters** at the dashboard level for interactive filtering
+7. **Save** as "E-commerce Monitoring Dashboard"
 
-### Step 3: Advanced Dashboard with Markdown
+### Step 3: Advanced Dashboard Features (Kibana 8.14.1)
+1. **Add Markdown panel** with enhanced formatting:
+   - Click **Create panel** → **Text**
+   - Use the **rich text editor** with improved formatting options
+
 ```markdown
-# E-commerce Platform Dashboard
+# 🛍️ E-commerce Platform Dashboard
 
-## Key Metrics
-- **Total Orders**: Real-time order processing
-- **Response Time**: API performance monitoring
-- **Error Rate**: System health indicator
+## 📊 Key Performance Indicators
+- **Total Orders**: Real-time order processing metrics
+- **Response Time**: API performance monitoring with P95/P99 percentiles
+- **Error Rate**: System health and reliability indicators
+- **Geographic Distribution**: Customer location analytics
 
-## Business Impact
-- Order processing efficiency
-- Customer experience metrics
-- Revenue tracking
+## 🎯 Business Impact Metrics
+- **Order Processing Efficiency**: Track order fulfillment speed
+- **Customer Experience**: Monitor response times and error rates
+- **Revenue Tracking**: Real-time sales and conversion metrics
+- **Operational Health**: System performance and availability
+
+## 🔄 Data Refresh
+This dashboard updates in real-time with **15-second intervals**
 ```
+
+2. **Add Controls** (new in 8.14):
+   - Click **Add panel** → **Controls**
+   - Add **Options list** control for `service.name.keyword`
+   - Add **Time range** control for custom time filtering
+   - Add **Range slider** for response time filtering
+
+3. **Configure Dashboard Settings**:
+   - Enable **Sync cursor** for coordinated highlighting
+   - Set **Auto-refresh** to 15 seconds
+   - Configure **Time picker** to show last 4 hours by default
 
 ---
 
@@ -647,14 +708,63 @@ curl -X PUT "localhost:9200/_watcher/watch/high_error_rate" -H 'Content-Type: ap
 '
 ```
 
-### Create Kibana Alerts
+### Create Kibana Alerting Rules (Kibana 8.14.1)
 1. Go to **Stack Management** → **Rules and Connectors**
-2. Create **Index threshold rule**
-3. Set conditions:
-   - Index: `logstash-*`
-   - When: `count()` is above `100`
-   - Over: `5 minutes`
-   - Grouped by: `service.name.keyword`
+2. Click **Create rule**
+3. **Rule type**: Select **Elasticsearch query**
+4. **Name**: "High Error Rate Alert"
+5. **Index**: `logstash-*`
+6. **Time field**: `@timestamp`
+7. **Query**: 
+   ```json
+   {
+     "query": {
+       "bool": {
+         "must": [
+           {
+             "term": {
+               "log.level": "ERROR"
+             }
+           }
+         ]
+       }
+     }
+   }
+   ```
+8. **Conditions**:
+   - **When**: `count()` 
+   - **IS ABOVE**: `10`
+   - **FOR THE LAST**: `5 minutes`
+9. **Actions**: 
+   - **Connector type**: Email (configure SMTP settings)
+   - **To**: `admin@company.com`
+   - **Subject**: `High Error Rate Alert - {{context.title}}`
+   - **Body**: Use template variables:
+     ```
+     Alert: {{context.title}}
+     
+     Error count: {{context.value}}
+     Time: {{context.date}}
+     
+     Query: {{context.conditions}}
+     ```
+10. **Save** the rule
+
+### Advanced Alerting with Machine Learning (Kibana 8.14.1)
+1. Go to **Machine Learning** → **Anomaly Detection**
+2. **Create job**:
+   - **Job type**: Single metric
+   - **Data view**: `logstash-data-view`
+   - **Aggregation**: Count
+   - **Bucket span**: 15 minutes
+   - **Detector**: High count
+3. **Configure advanced settings**:
+   - **Model plot**: Enable for detailed analysis
+   - **Dedicated index**: Enable for performance
+4. **Create alert** for ML anomalies:
+   - **Rule type**: ML anomaly detection alert
+   - **Severity threshold**: 75
+   - **Include interim results**: Enable
 
 ---
 
@@ -713,48 +823,56 @@ docker stats
 # mem_limit: 1g
 ```
 
-### Diagnostic Commands
+### Diagnostic Commands (Kibana 8.14.1)
 ```bash
 # Complete health check
 ./test-scripts.sh
 
-# Check all service endpoints
-curl -s localhost:9200/_cluster/health | jq '.status'
-curl -s localhost:5601/api/status | jq '.status.overall.state'
-curl -s localhost:8080/health
-curl -s localhost:8081/health
-curl -s localhost:8082/health
+# Check all service endpoints with improved error handling
+curl -s localhost:9200/_cluster/health | jq '.status' || echo "Elasticsearch not responding"
+curl -s localhost:5601/api/status | jq '.status.overall.state' || echo "Kibana not responding"
 
-# Check data flow
-curl "localhost:9200/_cat/indices?v" | grep logstash
-curl "localhost:9200/_cat/count/logstash-*"
+# Check Kibana 8.14 specific endpoints
+curl -s localhost:5601/api/features | jq '.[] | select(.id == "dashboard") | .app'
+curl -s localhost:5601/api/data_views | jq '.data_view[] | .title'
+
+# Test sample applications
+curl -s localhost:8080/health || echo "Order service not responding"
+curl -s localhost:8081/health || echo "Product service not responding"
+curl -s localhost:8082/health || echo "User service not responding"
+
+# Check data flow with enhanced filtering
+curl "localhost:9200/_cat/indices?v&h=index,docs.count,store.size" | grep logstash
+curl "localhost:9200/_cat/count/logstash-*?v"
+
+# Check Kibana data views
+curl -s localhost:5601/api/data_views | jq '.data_view[] | {title: .title, timeFieldName: .timeFieldName}'
 ```
 
 ---
 
-## 🎯 Best Practices
+## 🎯 Best Practices (Kibana 8.14.1)
 
-### 1. Index Management
+### 1. Data View Management
 ```bash
-# Use index templates
-curl -X PUT "localhost:9200/_index_template/app-logs" -H 'Content-Type: application/json' -d'
+# Create data view with runtime fields (new in 8.14)
+curl -X POST "localhost:5601/api/data_views/data_view" -H 'Content-Type: application/json' -H 'kbn-xsrf: true' -d'
 {
-  "index_patterns": ["app-logs-*"],
-  "template": {
-    "settings": {
-      "number_of_shards": 1,
-      "number_of_replicas": 0,
-      "index.lifecycle.name": "app-logs-policy"
-    },
-    "mappings": {
-      "properties": {
-        "@timestamp": { "type": "date" },
-        "service": {
-          "properties": {
-            "name": { "type": "keyword" }
-          }
-        },
-        "response_time": { "type": "float" }
+  "data_view": {
+    "title": "enhanced-logs-*",
+    "timeFieldName": "@timestamp",
+    "runtimeFieldMap": {
+      "order_priority": {
+        "type": "keyword",
+        "script": {
+          "source": "if (doc[\"order_amount\"].size() > 0) { double amount = doc[\"order_amount\"].value; if (amount > 1000) emit(\"high\"); else if (amount > 100) emit(\"medium\"); else emit(\"low\"); }"
+        }
+      },
+      "response_time_category": {
+        "type": "keyword", 
+        "script": {
+          "source": "if (doc[\"response_time\"].size() > 0) { double time = doc[\"response_time\"].value; if (time > 2000) emit(\"slow\"); else if (time > 1000) emit(\"medium\"); else emit(\"fast\"); }"
+        }
       }
     }
   }
@@ -762,92 +880,142 @@ curl -X PUT "localhost:9200/_index_template/app-logs" -H 'Content-Type: applicat
 '
 ```
 
-### 2. Query Optimization
+### 2. Advanced Query Optimization (KQL in 8.14)
 ```bash
-# Use filters instead of queries when possible
-curl -X GET "localhost:9200/logstash-*/_search" -H 'Content-Type: application/json' -d'
+# Use KQL for better performance in Kibana 8.14
+# Instead of: service.name: "order-service" AND log.level: "ERROR"
+# Use: service.name: "order-service" and log.level: "ERROR"
+
+# Enhanced filtering with wildcards
+# service.name: order* and @timestamp >= now-1h
+
+# Boolean queries with improved syntax
+# (service.name: "order-service" or service.name: "payment-service") and not log.level: "DEBUG"
+```
+
+### 3. Lens Visualization Best Practices
+```bash
+# Create reusable visualization templates
+cat > lens-templates.json << 'EOF'
 {
-  "query": {
-    "bool": {
-      "filter": [
-        {
-          "term": {
-            "service.name": "order-service"
-          }
-        },
-        {
-          "range": {
-            "@timestamp": {
-              "gte": "now-1h"
+  "service_performance_template": {
+    "datasourceStates": {
+      "formBased": {
+        "layers": {
+          "layer1": {
+            "columns": {
+              "col1": {
+                "operationType": "date_histogram",
+                "sourceField": "@timestamp",
+                "params": {
+                  "interval": "auto"
+                }
+              },
+              "col2": {
+                "operationType": "average",
+                "sourceField": "response_time",
+                "params": {
+                  "format": {
+                    "id": "number",
+                    "params": {
+                      "decimals": 2
+                    }
+                  }
+                }
+              }
             }
           }
         }
-      ]
+      }
     }
   }
+}
+EOF
+```
+
+### 4. Dashboard Performance Optimization (Kibana 8.14.1)
+```bash
+# Configure dashboard caching
+cat > kibana-performance.yml << 'EOF'
+# Enhanced caching in Kibana 8.14
+data.search.sessions.enabled: true
+data.search.sessions.defaultExpiration: 7d
+data.search.sessions.management.maxSessions: 100
+
+# Improved query performance
+data.search.timeout: 30s
+data.search.max_buckets: 100000
+
+# Dashboard-specific optimizations
+dashboard.allowByValueEmbeddables: false
+visualizations.legacyChartsLibrary: false
+EOF
+```
+
+### 5. Security Best Practices (Kibana 8.14.1)
+```bash
+# Create space-based security
+curl -X POST "localhost:5601/api/spaces/space" -H 'Content-Type: application/json' -H 'kbn-xsrf: true' -d'
+{
+  "id": "ecommerce-analytics",
+  "name": "E-commerce Analytics",
+  "description": "Space for e-commerce monitoring and analytics",
+  "initials": "EA",
+  "color": "#00BFB3",
+  "disabledFeatures": ["dev_tools", "monitoring"]
+}
+'
+
+# Create role with space-specific permissions
+curl -X POST "localhost:9200/_security/role/ecommerce_analyst" -H 'Content-Type: application/json' -d'
+{
+  "cluster": ["monitor"],
+  "indices": [
+    {
+      "names": ["logstash-*", "enhanced-logs-*"],
+      "privileges": ["read", "view_index_metadata"]
+    }
+  ],
+  "applications": [
+    {
+      "application": "kibana-.kibana",
+      "privileges": ["feature_dashboard.read", "feature_discover.read", "feature_visualize.read"],
+      "resources": ["space:ecommerce-analytics"]
+    }
+  ]
 }
 '
 ```
 
-### 3. Monitoring Setup
+### 6. Machine Learning Integration (Kibana 8.14.1)
 ```bash
-# Create monitoring dashboard
-cat > monitoring-dashboard.json << 'EOF'
+# Create ML job for anomaly detection
+curl -X PUT "localhost:9200/_ml/anomaly_detectors/ecommerce-anomaly-detection" -H 'Content-Type: application/json' -d'
 {
-  "dashboard": {
-    "title": "ELK Stack Monitoring",
-    "panels": [
+  "job_id": "ecommerce-anomaly-detection",
+  "description": "Detect anomalies in e-commerce metrics",
+  "analysis_config": {
+    "bucket_span": "15m",
+    "detectors": [
       {
-        "title": "Elasticsearch Cluster Health",
-        "type": "metric",
-        "query": "GET /_cluster/health"
+        "detector_description": "High order count",
+        "function": "high_count",
+        "by_field_name": "service.name.keyword"
       },
       {
-        "title": "Index Size",
-        "type": "line",
-        "query": "GET /_cat/indices?format=json"
-      },
-      {
-        "title": "Query Performance",
-        "type": "histogram",
-        "query": "GET /_nodes/stats/indices/search"
+        "detector_description": "Mean response time",
+        "function": "mean",
+        "field_name": "response_time",
+        "by_field_name": "service.name.keyword"
       }
     ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
   }
 }
-EOF
-```
-
-### 4. Security Checklist
-- [ ] Enable authentication
-- [ ] Configure TLS/SSL
-- [ ] Set up role-based access
-- [ ] Regular security updates
-- [ ] Monitor failed login attempts
-- [ ] Use strong passwords
-- [ ] Enable audit logging
-
-### 5. Performance Tuning
-```bash
-# Elasticsearch tuning
-cat > elasticsearch-tuning.yml << 'EOF'
-cluster.name: production-cluster
-node.name: node-1
-bootstrap.memory_lock: true
-indices.memory.index_buffer_size: 20%
-indices.queries.cache.size: 20%
-indices.requests.cache.size: 5%
-thread_pool.write.queue_size: 1000
-EOF
-
-# JVM settings
-cat > jvm-options.txt << 'EOF'
--Xms2g
--Xmx2g
--XX:+UseG1GC
--XX:G1HeapRegionSize=16m
--XX:+UseStringDeduplication
-EOF
+'
 ```
 
 ---
@@ -862,37 +1030,65 @@ EOF
 5. **Security**: Can you implement basic security measures?
 6. **Performance**: Can you optimize for production use?
 
-### Practical Exercise
+### Practical Exercise (Kibana 8.14.1)
 ```bash
-# Complete workflow exercise
-echo "=== Final Exercise ==="
+# Complete workflow exercise with Kibana 8.14 features
+echo "=== Final Exercise - Kibana 8.14.1 ==="
 
 # 1. Setup environment
 ./setup-docker.sh
 
-# 2. Generate sample data
+# 2. Generate sample data with business context
 for i in {1..100}; do
-    curl -s "localhost:8080/orders?customer_id=CUST$i&amount=$((RANDOM % 1000 + 50))" > /dev/null
+    customer_id="CUST$(printf "%03d" $i)"
+    amount=$((RANDOM % 1000 + 50))
+    priority=$( [ $amount -gt 500 ] && echo "high" || echo "normal" )
+    
+    curl -s "localhost:8080/orders?customer_id=$customer_id&amount=$amount&priority=$priority" > /dev/null
+    
+    # Add some errors for testing
+    if [ $((i % 10)) -eq 0 ]; then
+        curl -s "localhost:8080/orders?simulate_error=true" > /dev/null
+    fi
 done
 
-# 3. Create analysis
-echo "Create a dashboard showing:"
-echo "- Order volume over time"
-echo "- Average order value"
-echo "- Customer distribution"
-echo "- Error rate monitoring"
+# 3. Create enhanced analysis with Kibana 8.14.1
+echo "Tasks to complete in Kibana 8.14.1:"
+echo ""
+echo "📊 DATA VIEWS:"
+echo "- Create data view with runtime fields for order priority"
+echo "- Add calculated fields for response time categories"
+echo ""
+echo "🎨 LENS VISUALIZATIONS:"
+echo "- Order volume trend (using date histogram)"
+echo "- Average order value by priority (using Lens metrics)"
+echo "- Geographic distribution map (using new map features)"
+echo "- Error rate over time (using formula functions)"
+echo ""
+echo "📈 DASHBOARD FEATURES:"
+echo "- Add interactive controls for filtering"
+echo "- Use markdown panels with rich formatting"
+echo "- Configure auto-refresh and time sync"
+echo "- Add drilldown actions between visualizations"
+echo ""
+echo "🚨 ALERTING & ML:"
+echo "- Create Elasticsearch query rules for error rate"
+echo "- Set up ML anomaly detection job"
+echo "- Configure webhook notifications"
+echo ""
+echo "🔧 ADVANCED FEATURES:"
+echo "- Use KQL for complex filtering"
+echo "- Create saved searches with runtime fields"
+echo "- Set up dashboard spaces for team collaboration"
+echo "- Configure data view field formatters"
 
-# 4. Set up alerts
-echo "Configure alerts for:"
-echo "- High error rate (>5%)"
-echo "- Low order volume (<10/hour)"
-echo "- High response time (>2s)"
-
-# 5. Performance optimization
-echo "Optimize for:"
-echo "- Query performance"
-echo "- Memory usage"
-echo "- Disk space"
+# 4. Performance optimization checklist
+echo ""
+echo "⚡ PERFORMANCE OPTIMIZATION:"
+echo "- Enable dashboard caching"
+echo "- Use index patterns with appropriate time ranges"
+echo "- Optimize Lens visualizations for large datasets"
+echo "- Configure query timeout settings"
 ```
 
 ### Next Steps
@@ -904,17 +1100,46 @@ echo "- Disk space"
 
 ---
 
-## 🎓 Congratulations!
+## 🎓 Congratulations! (Kibana 8.14.1 Edition)
 
-You've completed the comprehensive ELK Stack hands-on tutorial! You should now be able to:
+You've completed the comprehensive ELK Stack hands-on tutorial updated for Kibana 8.14.1! You should now be able to:
 
-✅ **Deploy** ELK Stack in multiple environments  
-✅ **Configure** all components for production use  
-✅ **Create** meaningful dashboards and visualizations  
-✅ **Troubleshoot** common issues and problems  
-✅ **Optimize** performance for your specific needs  
-✅ **Secure** your ELK Stack deployment  
-✅ **Monitor** and maintain your system  
+✅ **Deploy** ELK Stack in multiple environments with latest features  
+✅ **Create Data Views** with runtime fields and advanced field mapping  
+✅ **Use Lens** for unified visualization creation with enhanced capabilities  
+✅ **Build Interactive Dashboards** with controls, filters, and auto-refresh  
+✅ **Implement Modern Alerting** with Elasticsearch query rules and ML integration  
+✅ **Apply KQL** for advanced querying and filtering  
+✅ **Configure Security** with spaces, roles, and field-level permissions  
+✅ **Optimize Performance** with caching and query optimization  
+✅ **Troubleshoot** using enhanced diagnostic tools and APIs  
+
+### 🆕 New Features in Kibana 8.14.1 You've Mastered:
+
+**📊 Data Views & Runtime Fields**
+- Created dynamic calculated fields without reindexing
+- Implemented business logic in runtime field scripts
+- Enhanced data exploration with on-the-fly transformations
+
+**🎨 Lens Unified Visualization**
+- Built all visualization types in a single interface
+- Used formula functions for complex calculations
+- Created reusable visualization templates
+
+**📈 Enhanced Dashboards**
+- Added interactive controls for dynamic filtering
+- Implemented auto-refresh and time synchronization
+- Used markdown panels with rich text formatting
+
+**🚨 Advanced Alerting**
+- Created Elasticsearch query-based rules
+- Integrated machine learning anomaly detection
+- Configured multiple notification channels
+
+**🔧 Performance & Security**
+- Optimized dashboards with caching strategies
+- Implemented space-based security model
+- Enhanced query performance with KQL  
 
 ## 📚 Additional Resources
 
